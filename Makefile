@@ -70,6 +70,11 @@ valgrind: valgrind_existence
 	@echo "Test with specific case by running command:" 
 	@echo "scripts/driver.py -p $(patched_file) --valgrind -t <tid>"
 
+cscope_tags:
+	find . -name "*.[ch]" > cscope.files
+	cscope -Rbq
+	ctags -R -h=".c.h"
+
 clean:
 	rm -f $(OBJS) $(deps) *~ qtest /tmp/qtest.*
 	rm -rf .$(DUT_DIR)
