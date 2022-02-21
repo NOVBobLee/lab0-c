@@ -24,3 +24,7 @@ GPATH
 GRTAGS
 GSYMS
 GTAGS
+
+# editor configs
+.vimrc
+.dir-locals.el
