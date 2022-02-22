@@ -78,7 +78,35 @@ fail_alloc_str:
  */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    element_t *elm;
+    char *str;
+    int s_length = strlen(s);
+
+    if (!head)
+        return false;
+
+    str = malloc(s_length + 1);
+    if (!str)
+        goto fail_alloc_str;
+
+    elm = malloc(sizeof(element_t));
+    if (!elm)
+        goto fail_alloc_elm;
+
+    /* copy the string */
+    memcpy(str, s, s_length);
+    str[s_length] = '\0';
+
+    /* assemble the queue */
+    elm->value = str;
+    list_add_tail(&elm->list, head);
+
     return true;
+
+fail_alloc_elm:
+    free(str);
+fail_alloc_str:
+    return false;
 }
 
 /*
