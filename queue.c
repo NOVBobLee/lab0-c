@@ -27,7 +27,20 @@ struct list_head *q_new()
 }
 
 /* Free all storage used by queue */
-void q_free(struct list_head *l) {}
+void q_free(struct list_head *l)
+{
+    element_t *elm, *elm_safe;
+
+    if (!l)
+        return;
+
+    /* free the queue elements */
+    list_for_each_entry_safe (elm, elm_safe, l, list)
+        q_release_element(elm);
+
+    /* free the queue itself, the list head */
+    free(l);
+}
 
 /*
  * Allocate an element_t which member value has length value_size.
