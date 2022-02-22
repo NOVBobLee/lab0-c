@@ -49,7 +49,7 @@ void q_free(struct list_head *l)
  * Return non-NULL if successful.
  * Return NULL if failed to allocate the space.
  */
-element_t *element_alloc(size_t value_size)
+static element_t *element_alloc(size_t value_size)
 {
     element_t *elm;
     char *value;
