@@ -71,9 +71,12 @@ valgrind: valgrind_existence
 	@echo "scripts/driver.py -p $(patched_file) --valgrind -t <tid>"
 
 cscope_tags:
-	find . -name "*.[ch]" > cscope.files
-	cscope -Rbq
-	ctags -R -h=".c.h"
+	@echo -n "cscope.. "
+	@find . -name "*.[ch]" > cscope.files
+	@cscope -Rbq
+	@echo "done\ntags.. \c" -e
+	@ctags -R -h=".c.h"
+	@echo "done"
 
 clean:
 	rm -f $(OBJS) $(deps) *~ qtest /tmp/qtest.*
