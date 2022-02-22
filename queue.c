@@ -30,6 +30,43 @@ struct list_head *q_new()
 void q_free(struct list_head *l) {}
 
 /*
+ * Allocate an element_t which member value has length value_size.
+ * @value_length: size of member value (byte)
+ *
+ * Return non-NULL if successful.
+ * Return NULL if failed to allocate the space.
+ */
+element_t *element_alloc(size_t value_size)
+{
+    element_t *elm;
+    char *value;
+
+    value = malloc(value_size);
+    if (!value)
+        goto fail_alloc_value;
+
+    elm = malloc(sizeof(element_t));
+    if (!elm)
+        goto fail_alloc_elm;
+
+    /* assemble the element_t and value */
+    elm->value = value;
+
+    /* Poison the list node to prevent anyone using the unlinked list node */
+#ifdef LIST_POISONING
+    elm->list->prev = (struct list_head *) (0x00100100);
+    elm->list->next = (struct list_head *) (0x00200200);
+#endif
+
+    return elm;
+
+fail_alloc_elm:
+    free(value);
+fail_alloc_value:
+    return NULL;
+}
+
+/*
  * Attempt to insert element at head of queue.
  * Return true if successful.
  * Return false if q is NULL or could not allocate space.
@@ -39,34 +76,24 @@ void q_free(struct list_head *l) {}
 bool q_insert_head(struct list_head *head, char *s)
 {
     element_t *elm;
-    char *str;
-    int s_length = strlen(s);
+    int s_length;
 
     if (!head)
         return false;
 
-    str = malloc(s_length + 1);
-    if (!str)
-        goto fail_alloc_str;
-
-    elm = malloc(sizeof(element_t));
+    s_length = strlen(s);
+    elm = element_alloc(s_length + 1);
     if (!elm)
-        goto fail_alloc_elm;
+        return false;
 
-    /* copy the string */
-    memcpy(str, s, s_length);
-    str[s_length] = '\0';
+    /* copy the string content */
+    memcpy(elm->value, s, s_length);
+    elm->value[s_length] = '\0';
 
-    /* assemble the queue */
-    elm->value = str;
+    /* add the list into the head of head */
     list_add(&elm->list, head);
 
     return true;
-
-fail_alloc_elm:
-    free(str);
-fail_alloc_str:
-    return false;
 }
 
 /*
@@ -79,34 +106,24 @@ fail_alloc_str:
 bool q_insert_tail(struct list_head *head, char *s)
 {
     element_t *elm;
-    char *str;
-    int s_length = strlen(s);
+    int s_length;
 
     if (!head)
         return false;
 
-    str = malloc(s_length + 1);
-    if (!str)
-        goto fail_alloc_str;
-
-    elm = malloc(sizeof(element_t));
+    s_length = strlen(s);
+    elm = element_alloc(s_length + 1);
     if (!elm)
-        goto fail_alloc_elm;
+        return false;
 
-    /* copy the string */
-    memcpy(str, s, s_length);
-    str[s_length] = '\0';
+    /* copy the string content */
+    memcpy(elm->value, s, s_length);
+    elm->value[s_length] = '\0';
 
-    /* assemble the queue */
-    elm->value = str;
+    /* add the list into the tail of head */
     list_add_tail(&elm->list, head);
 
     return true;
-
-fail_alloc_elm:
-    free(str);
-fail_alloc_str:
-    return false;
 }
 
 /*
