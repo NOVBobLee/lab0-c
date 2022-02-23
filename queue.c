@@ -386,9 +386,156 @@ void q_reverse(struct list_head *head)
     } while (a != b && a->prev != b); /* stop when a is b or a precedes b */
 }
 
+struct list_head *merge(struct list_head *a, struct list_head *b)
+{
+    /* head initial value is meaningless, just for satisfying cppcheck */
+    struct list_head *head = NULL, **tail = &head; /* next's tail */
+
+    /* threading the lists in order */
+    for (;;) {
+        element_t *elm_a = list_entry(a, element_t, list);
+        element_t *elm_b = list_entry(b, element_t, list);
+        if (strcmp(elm_a->value, elm_b->value) <= 0) {
+            *tail = a;
+            tail = &a->next;
+            a = a->next;
+            if (!a) {
+                *tail = b;
+                break;
+            }
+        } else {
+            *tail = b;
+            tail = &b->next;
+            b = b->next;
+            if (!b) {
+                *tail = a;
+                break;
+            }
+        }
+    }
+
+    return head;
+}
+
+void merge_restore(struct list_head *head,
+                   struct list_head *a,
+                   struct list_head *b)
+{
+    struct list_head *tail = head;
+
+    /* threading in order and restore the prev pointer */
+    for (;;) {
+        element_t *elm_a = list_entry(a, element_t, list);
+        element_t *elm_b = list_entry(b, element_t, list);
+        if (strcmp(elm_a->value, elm_b->value) <= 0) {
+            tail->next = a;
+            a->prev = tail;
+            tail = a;
+            a = a->next;
+            if (!a)
+                break;
+        } else {
+            tail->next = b;
+            b->prev = tail;
+            tail = b;
+            b = b->next;
+            if (!b) {
+                b = a;
+                break;
+            }
+        }
+    }
+
+    /* splice two lists */
+    tail->next = b;
+
+    /* restore the remaining nodes' prev pointers */
+    do {
+        b->prev = tail;
+        tail = b;
+        b = b->next;
+    } while (b);
+
+    /* restore the cycle of doubly linked list */
+    tail->next = head;
+    head->prev = tail;
+}
+
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
  * element, do nothing.
+ *
+ * bottom-up merge sort:
+ *         prepare-to-merge(4 + 4 = 8)
+ *             |    \         pending's tail
+ *        prev *     *           |
+ *    NULL <-- o <-- o <-- o <-- o   <~~ pending
+ *            /     /     /     /
+ *           o     o     o    NULL
+ *     next /     /     /            state: [ 4-4-2-1 ] -> [ 8-2-1 ]
+ *         o     o    NULL
+ *        /     /                list
+ *       o     o                   |
+ *      /     /           head --> o --> o --> NULL
+ *    NULL  NULL               next
+ * (older)  (newer)
  */
-void q_sort(struct list_head *head) {}
+void q_sort(struct list_head *head)
+{
+    struct list_head *list, *pending;
+    unsigned long count = 0;
+
+    if (!head)
+        return;
+
+    list = head->next;
+    /* if head is empty or singular */
+    if (list == head->prev)
+        return;
+
+    pending = NULL;
+    head->prev->next = NULL; /* break the cycle of doubly linked list */
+
+    /* bottom-up merge sort */
+    do {
+        int bits;
+        struct list_head **tail = &pending; /* pending's tail */
+
+        /* change to the next two possible merging pending lists */
+        for (bits = count; bits & 1; bits >>= 1)
+            tail = &(*tail)->prev;
+
+        /* merge if bits becomes non-zero even */
+        if (bits) {
+            struct list_head *newer = *tail, *older = newer->prev;
+
+            newer = merge(older, newer);
+            newer->prev = older->prev;
+            *tail = newer;
+        }
+
+        /* add list into pending and update list, count */
+        list->prev = pending;
+        pending = list;
+        list = list->next;
+        pending->next = NULL;
+        ++count;
+    } while (list);
+
+    /* all lists are in pending, merge them */
+    list = pending;
+    pending = list->prev;
+    for (;;) {
+        struct list_head *next = pending->prev;
+
+        if (!next)
+            break;
+
+        list = merge(pending, list);
+        pending = next;
+    }
+
+    /* final merge and restore the doubly linked list */
+    merge_restore(head, pending, list);
+}
