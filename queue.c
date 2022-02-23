@@ -466,20 +466,51 @@ void merge_restore(struct list_head *head,
  * No effect if q is NULL or empty. In addition, if q has only one
  * element, do nothing.
  *
- * bottom-up merge sort:
- *         prepare-to-merge(4 + 4 = 8)
- *             |    \         pending's tail
- *        prev *     *           |
- *    NULL <-- o <-- o <-- o <-- o   <~~ pending
- *            /     /     /     /
- *           o     o     o    NULL
- *     next /     /     /            state: [ 4-4-2-1 ] -> [ 8-2-1 ]
- *         o     o    NULL
- *        /     /                list
- *       o     o                   |
- *      /     /           head --> o --> o --> NULL
- *    NULL  NULL               next
+ * From Linux: lib/list_sort.c
+ * bottom-up merge sort (not fully-eager):
+ *
+ *       prepare-to-merge(4 + 4 = 8)
+ *             |   \   tail(10) <~ tail(1011)    1011 = 8 + 2 + 1
+ *        prev |    \ /           /               ^   = (4 + 4) + 2 + 1
+ *    NULL <-- o <-- o <-- o <-- o  <~~ pending   |
+ *            /     /     /     /                 0 bit on 4 (2^2)
+ *           o     o     o    NULL               /
+ *     next /     /     /            state: [ 4-4-2-1 > 8-2-1 ]
+ *         o     o    NULL           count = 11
+ *        /     /              list
+ *       o     o                 |
+ *      /     /         head --> o --> o --> NULL
+ *    NULL  NULL             next
  * (older)  (newer)
+ *
+ * observation:
+ *   count = 8, bin: 1000, [ 4-2-1-1 ] -> [ 4-2-2 ]
+ *                      ^ the next carry digit
+ *   count = 9, bin: 1001, [ 4-2-2-1 ] -> [ 4-4-1 ]
+ *                     ^ the next carry digit
+ *   count = 15, bin: 1111, [ 8-4-2-1 ]
+ *                   ^ the next carry digit (out of pending, no merge)
+ *
+ *   count   state          merge-num accum-num-from-new-start
+ *   1    1  [ 1 ]
+ *   2   10  [ 1-1 > 2 ]         1      (new start)
+ *   3   11  [ 2-1 ]                        1
+ *   4  100  [ 2-1-1 > 2-2 ]     1*     (new start)
+ *   5  101  [ 2-2-1 > 4-1 ]     2          1
+ *   6  110  [ 4-1-1 > 4-2 ]     1*         2
+ *   7  111  [ 4-2-1 ]                      3 (11 = 100 ^ 111)
+ *   8 1000  [ 4-2-1-1 > 4-2-2 ] 1*     (new start)
+ *   9 1001  [ 4-2-2-1 > 4-4-1 ] 2*         1
+ *  10 1010  [ 4-4-1-1 > 4-4-2 ] 1*         2
+ *  11 1011  [ 4-4-2-1 > 8-2-1 ] 4          3
+ *  12 1100  [ 8-2-1-1 > 8-2-2 ] 1*         4
+ *  13 1101  [ 8-2-2-1 > 8-4-1 ] 2*         5
+ *  14 1110  [ 8-4-1-1 > 8-4-2 ] 1*         6
+ *  15 1111  [ 8-4-2-1 ]                    7 (111 = 1000 ^ 1111)
+ *
+ *  * marks the previous merge-num mode, it shows up repeatedly, that's why the
+ *  not-fully-eager merge can perfectly match the bits, the binary number,
+ *  beautiful
  */
 void q_sort(struct list_head *head)
 {
@@ -502,7 +533,7 @@ void q_sort(struct list_head *head)
         int bits;
         struct list_head **tail = &pending; /* pending's tail */
 
-        /* change to the next two possible merging pending lists */
+        /* move tail to the next two possible merging pending lists */
         for (bits = count; bits & 1; bits >>= 1)
             tail = &(*tail)->prev;
 
