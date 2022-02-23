@@ -11,6 +11,18 @@
  *   cppcheck-suppress nullPointer
  */
 
+//#define DEBUG_PRINT
+#ifdef DEBUG_PRINT
+/*
+ * Print the member value correspoding to member list
+ * @node: the member list of element_t (struct list_head *)
+ * @head: head of the list
+ */
+#define print_value(node, head) \
+    printf("%s: %s\n", #node,   \
+           (node != head) ? list_entry(node, element_t, list)->value : "head")
+#endif /* DEBUG_PRINT */
+
 /*
  * Create empty queue.
  * Return NULL if could not allocate space.
