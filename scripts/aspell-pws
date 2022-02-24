@@ -141,3 +141,5 @@ shasum
 verifier
 CI
 foreach
+cscope
+Makefile
