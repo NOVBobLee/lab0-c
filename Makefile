@@ -71,10 +71,11 @@ valgrind: valgrind_existence
 	@echo "scripts/driver.py -p $(patched_file) --valgrind -t <tid>"
 
 cscope_tags:
-	@echo -n "cscope.. "
+	@rm -f cscope.* tags
+	@echo -n "Old cscope, tags revmoed..\nNew cscope.. "
 	@find . -name "*.[ch]" > cscope.files
 	@cscope -Rbq
-	@echo "done\ntags.. \c" -e
+	@echo "done\nNew tags.. \c" -e
 	@ctags -R -h=".c.h"
 	@echo "done"
 
