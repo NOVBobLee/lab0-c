@@ -386,7 +386,7 @@ void q_reverse(struct list_head *head)
     } while (a != b && a->prev != b); /* stop when a is b or a precedes b */
 }
 
-struct list_head *merge(struct list_head *a, struct list_head *b)
+static struct list_head *merge(struct list_head *a, struct list_head *b)
 {
     /* head initial value is meaningless, just for satisfying cppcheck */
     struct list_head *head = NULL, **tail = &head; /* next's tail */
@@ -417,9 +417,9 @@ struct list_head *merge(struct list_head *a, struct list_head *b)
     return head;
 }
 
-void merge_restore(struct list_head *head,
-                   struct list_head *a,
-                   struct list_head *b)
+static void merge_restore(struct list_head *head,
+                          struct list_head *a,
+                          struct list_head *b)
 {
     struct list_head *tail = head;
 
