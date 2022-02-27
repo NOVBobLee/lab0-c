@@ -482,35 +482,6 @@ static void merge_restore(struct list_head *head,
  *      /     /         head --> o --> o --> NULL
  *    NULL  NULL             next
  * (older)  (newer)
- *
- * observation:
- *   count = 8, bin: 1000, [ 4-2-1-1 ] -> [ 4-2-2 ]
- *                      ^ the next carry digit
- *   count = 9, bin: 1001, [ 4-2-2-1 ] -> [ 4-4-1 ]
- *                     ^ the next carry digit
- *   count = 15, bin: 1111, [ 8-4-2-1 ]
- *                   ^ the next carry digit (out of pending, no merge)
- *
- *   count   state          merge-num accum-num-from-new-start
- *   1    1  [ 1 ]
- *   2   10  [ 1-1 > 2 ]         1      (new start)
- *   3   11  [ 2-1 ]                        1
- *   4  100  [ 2-1-1 > 2-2 ]     1*     (new start)
- *   5  101  [ 2-2-1 > 4-1 ]     2          1
- *   6  110  [ 4-1-1 > 4-2 ]     1*         2
- *   7  111  [ 4-2-1 ]                      3 (11 = 100 ^ 111)
- *   8 1000  [ 4-2-1-1 > 4-2-2 ] 1*     (new start)
- *   9 1001  [ 4-2-2-1 > 4-4-1 ] 2*         1
- *  10 1010  [ 4-4-1-1 > 4-4-2 ] 1*         2
- *  11 1011  [ 4-4-2-1 > 8-2-1 ] 4          3
- *  12 1100  [ 8-2-1-1 > 8-2-2 ] 1*         4
- *  13 1101  [ 8-2-2-1 > 8-4-1 ] 2*         5
- *  14 1110  [ 8-4-1-1 > 8-4-2 ] 1*         6
- *  15 1111  [ 8-4-2-1 ]                    7 (111 = 1000 ^ 1111)
- *
- *  * marks the previous merge-num mode, it shows up repeatedly, that's why the
- *  not-fully-eager merge can perfectly match the bits, the binary number,
- *  beautiful
  */
 void q_sort(struct list_head *head)
 {
