@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "harness.h"
 #include "queue.h"
@@ -543,4 +544,31 @@ void q_sort(struct list_head *head)
 
     /* final merge and restore the doubly linked list */
     merge_restore(head, pending, list);
+}
+
+/*
+ * Attempt to shuffle the queue by Fisher-Yates shuffle
+ * @head: the queue's head
+ */
+void q_shuffle(struct list_head *head)
+{
+    struct list_head *cur, *next, *swap_node;
+    int n = q_size(head);
+
+    if (n < 2)
+        return;
+
+    srand(time(NULL));
+    list_for_each_safe (cur, next, head) {
+        if (n-- == 1)
+            break;
+
+        int idx = rand() % n;
+        for (swap_node = head->prev; idx--; swap_node = swap_node->prev)
+            ;
+        if (swap_node != cur)
+            list_swap(swap_node, cur);
+        if (swap_node == next)
+            next = cur;
+    }
 }
