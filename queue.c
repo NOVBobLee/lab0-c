@@ -380,27 +380,7 @@ void q_reverse(struct list_head *head)
     b = head->prev;
 
     do {
-        /* swap a, b */
-        if (a->next != b) { /* if a is not beside b */
-            a->prev->next = b;
-            b->prev->next = a;
-            tmp = a->prev;
-            a->prev = b->prev;
-            b->prev = tmp;
-
-            a->next->prev = b;
-            b->next->prev = a;
-            tmp = a->next;
-            a->next = b->next;
-            b->next = tmp;
-        } else {
-            a->prev->next = b;
-            b->prev = a->prev;
-            b->next->prev = a;
-            a->next = b->next;
-            a->prev = b;
-            b->next = a;
-        }
+        list_swap(a, b);
 
         /* update a, b for next iteration */
         tmp = a;
