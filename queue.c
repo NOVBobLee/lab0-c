@@ -339,6 +339,29 @@ void q_swap(struct list_head *head)
 }
 
 /*
+ * Attempt to swap two list nodes.
+ * @a: the list node swaps with b
+ * @b: the list node swaps with a
+ *
+ * a,b MUST be different.
+ */
+static inline void list_swap(struct list_head *a, struct list_head *b)
+{
+    struct list_head *pos = b->prev;
+
+    list_del(b);
+    /* replace a by b */
+    b->prev = a->prev;
+    b->next = a->next;
+    a->next->prev = b;
+    a->prev->next = b;
+    if (pos == a)
+        pos = b;
+    /* a add before pos */
+    list_add(a, pos);
+}
+
+/*
  * Reverse elements in queue
  * No effect if q is NULL or empty
  * This function should not allocate or free any list elements
