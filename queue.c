@@ -371,23 +371,21 @@ static inline void list_swap(struct list_head *a, struct list_head *b)
  */
 void q_reverse(struct list_head *head)
 {
-    struct list_head *a, *b, *tmp;
+    struct list_head *cur, *next, *tmp;
 
     if (!head || list_empty(head) || list_is_singular(head))
         return;
 
-    /* initialize */
-    a = head->next;
-    b = head->prev;
+    list_for_each_safe (cur, next, head) {
+        tmp = cur->next;
+        cur->next = cur->prev;
+        cur->prev = tmp;
+    }
 
-    do {
-        list_swap(a, b);
-
-        /* update a, b for next iteration */
-        tmp = a;
-        a = b->next;
-        b = tmp->prev;
-    } while (a != b && a->prev != b); /* stop when a is b or a precedes b */
+    /* swap head's pointers */
+    tmp = cur->next;
+    cur->next = cur->prev;
+    cur->prev = tmp;
 }
 
 static struct list_head *merge(struct list_head *a, struct list_head *b)
