@@ -563,7 +563,7 @@ void q_shuffle(struct list_head *head)
         if (n-- == 1)
             break;
 
-        int idx = rand() % n;
+        int idx = rand() % (n + 1);
         for (swap_node = head->prev; idx--; swap_node = swap_node->prev)
             ;
         if (swap_node != cur)
