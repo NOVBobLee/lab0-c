@@ -72,7 +72,7 @@ valgrind: valgrind_existence
 
 cscope_tags:
 	@rm -f cscope.* tags
-	@echo -n "Old cscope, tags revmoed..\nNew cscope.. "
+	@echo -n "Old cscope, tags removed..\nNew cscope.. "
 	@find . -name "*.[ch]" > cscope.files
 	@cscope -Rbq
 	@echo "done\nNew tags.. \c" -e
