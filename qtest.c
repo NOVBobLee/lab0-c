@@ -25,8 +25,7 @@
 /* How much padding should be added to check for string overrun? */
 #define STRINGPAD MAXSTRING
 
-/*
- * It is a bit sketchy to use this #include file on the solution version of the
+/* It is a bit sketchy to use this #include file on the solution version of the
  * code.
  * OK as long as head field of queue_t structure is in first position in
  * solution code
@@ -40,14 +39,12 @@
 
 #define HISTORY_LEN 20
 
-/*
- * How large is a queue before it's considered big.
+/* How large is a queue before it's considered big.
  * This affects how it gets printed
  * and whether cautious mode is used when freeing the queue
  */
 #define BIG_LIST 30
 static int big_list_size = BIG_LIST;
-
 
 /* Global variables */
 
@@ -138,8 +135,7 @@ static bool do_new(int argc, char *argv[])
     return ok && !error_check();
 }
 
-/*
- * TODO: Add a buf_size check of if the buf_size may be less
+/* TODO: Add a buf_size check of if the buf_size may be less
  * than MIN_RANDSTR_LEN.
  */
 static void fill_rand_string(char *buf, size_t buf_size)
@@ -148,9 +144,8 @@ static void fill_rand_string(char *buf, size_t buf_size)
     while (len < MIN_RANDSTR_LEN)
         len = rand() % buf_size;
 
-    for (size_t n = 0; n < len; n++) {
+    for (size_t n = 0; n < len; n++)
         buf[n] = charset[rand() % (sizeof charset - 1)];
-    }
     buf[len] = '\0';
 }
 
@@ -397,8 +392,7 @@ static bool do_remove(int option, int argc, char *argv[])
             ok = false;
         }
 
-        /*
-         * Check whether padding in array removes are still initial value 'X'.
+        /* Check whether padding in array removes are still initial value 'X'.
          * If there's other character in padding, it's overflowed.
          */
         int i = string_length + 1;
@@ -1030,9 +1024,8 @@ int main(int argc, char *argv[])
     }
 
     set_verblevel(level);
-    if (level > 1) {
+    if (level > 1)
         set_echo(true);
-    }
     if (logfile_name)
         set_logfile(logfile_name);
 
@@ -1044,5 +1037,5 @@ int main(int argc, char *argv[])
     /* Do finish_cmd() before check whether ok is true or false */
     ok = finish_cmd() && ok;
 
-    return ok ? 0 : 1;
+    return !ok;
 }
